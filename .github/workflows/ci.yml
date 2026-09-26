@@ -3,9 +3,9 @@ name: CI
 on: [push, pull_request]
 
 jobs:
-    # ======================================
-    #      Windows vc2019
-    # ======================================
+  # ======================================
+  #      Windows vc2019
+  # ======================================
 
   build-windows-latest:
     runs-on: windows-2022
@@ -32,9 +32,9 @@ jobs:
         path: build_vc_latest/Release/decomp_main.exe
         retention-days: 7
 
-    # ======================================
-    #      Windows vc6
-    # ======================================
+  # ======================================
+  #      Windows vc6
+  # ======================================
 
   build-windows-vc6:
     runs-on: windows-latest
@@ -98,9 +98,9 @@ jobs:
         path: ./Scripts/progress.json
         key: progress-json-${{ github.sha }}
 
-    # ======================================
-    #      Reccmp
-    # ======================================
+  # ======================================
+  #      Reccmp
+  # ======================================
 
   reccmp:
     runs-on: windows-latest
@@ -140,7 +140,7 @@ jobs:
         copy build_vc6/decomp_main.pdb build_vc6/9.6f.pdb
         copy build_vc6/decomp_main.exe build_vc6/10.5.exe
         copy build_vc6/decomp_main.pdb build_vc6/10.5.pdb
-        reccmp-project detect --what original   --search-path Scripts/bin_comp
+        reccmp-project detect --what original --search-path Scripts/bin_comp
         reccmp-project detect --what recompiled --search-path build_vc6
 
     - name: Reccmp 10.5
@@ -163,13 +163,13 @@ jobs:
         retention-days: 7
 
     - name: Compare variables
-      continue-on-error: true  # For initial PR. Remove once the reported diffs are solved.
+      continue-on-error: true
       run: |
         reccmp-datacmp --target 105
 
-    # ======================================
-    #      Linux vc6
-    # ======================================
+  # ======================================
+  #      Linux vc6
+  # ======================================
 
   build-linux-vc6:
     runs-on: ubuntu-latest
@@ -205,9 +205,33 @@ jobs:
         python3 vc6_setup.py
         python3 build.py
 
-    - name: Upload artifacts on Linux
+    - name: Prepare full Linux VC6 artifact
+      run: |
+        mkdir -p gta2_re_full_build
+        cp build_vc6/decomp_main.exe gta2_re_full_build/
+        cp build_vc6/gta2_dll_exports.dll gta2_re_full_build/
+        cp build_vc6/gta2_dll_imports.dll gta2_re_full_build/
+        cp build_vc6/HookLoader.dll gta2_re_full_build/
+        cp build_vc6/dear_imgui.dll gta2_re_full_build/
+        cp build_vc6/d3ddll.dll gta2_re_full_build/
+        cp build_vc6/DmaVideo.dll gta2_re_full_build/
+        cp Scripts/bin_comp/new_data.json gta2_re_full_build/
+
+    - name: Verify full Linux VC6 artifact
+      run: |
+        ls -lh gta2_re_full_build
+        test -f gta2_re_full_build/decomp_main.exe
+        test -f gta2_re_full_build/gta2_dll_exports.dll
+        test -f gta2_re_full_build/gta2_dll_imports.dll
+        test -f gta2_re_full_build/HookLoader.dll
+        test -f gta2_re_full_build/dear_imgui.dll
+        test -f gta2_re_full_build/d3ddll.dll
+        test -f gta2_re_full_build/DmaVideo.dll
+        test -f gta2_re_full_build/new_data.json
+
+    - name: Upload full Linux VC6 build
       uses: actions/upload-artifact@v4
       with:
-        name: linux_vc6_main_exe
-        path: build_vc6/decomp_main.exe
+        name: linux_vc6_full_build
+        path: gta2_re_full_build/
         retention-days: 7
